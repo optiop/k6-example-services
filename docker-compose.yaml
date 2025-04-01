@@ -1,0 +1,57 @@
+services:
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: prometheus
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./prometheus/prometheus.yml:/etc/prometheus/prometheus.yml
+    command:
+      - "--config.file=/etc/prometheus/prometheus.yml"
+
+  grafana:
+    image: grafana/grafana:latest
+    container_name: grafana
+    ports:
+      - "3000:3000"
+    environment:
+      - GF_SECURITY_ADMIN_PASSWORD=admin
+    volumes:
+      - grafana-data:/var/lib/grafana
+
+  k6:
+    image: grafana/k6:latest
+    container_name: k6
+    depends_on:
+      - prometheus
+    command: >
+      run --out prometheus_remote_write=http://prometheus:9090/api/v1/write /scripts/test.js
+    volumes:
+      - ./k6:/scripts
+
+  golang-service:
+    build:
+      context: ./golang-service
+      dockerfile: Dockerfile
+    ports:
+      - "8080:8080"
+    deploy:
+      resources:
+        limits:
+          cpus: "1.0"
+          memory: 512M
+
+  rust-service:
+    build:
+      context: ./rust-service
+      dockerfile: Dockerfile
+    ports:
+      - "8081:8081"
+    deploy:
+      resources:
+        limits:
+          cpus: "1.0"
+          memory: 512M
+
+volumes:
+  grafana-data:
