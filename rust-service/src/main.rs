@@ -18,14 +18,14 @@ async fn main() -> std::io::Result<()> {
     // Initialize logger
     env_logger::init_from_env(Env::default().default_filter_or("info"));
 
-    println!("Starting server at http://127.0.0.1:8081");
+    println!("Starting server at http://0.0.0.0:8081");
     HttpServer::new(|| {
         App::new()
             .wrap(Logger::new("%r %s %D ms")) // Log format: request, status, duration
             .service(hello)
             .service(ping)
     })
-    .bind("127.0.0.1:8081")?
+    .bind("0.0.0.0:8081")?
     .run()
     .await
 }
