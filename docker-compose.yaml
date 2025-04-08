@@ -8,6 +8,12 @@ services:
       - --web.enable-remote-write-receiver
       - --enable-feature=native-histograms
       - --config.file=/etc/prometheus/prometheus.yml
+    deploy:
+      resources:
+        limits:
+          memory: 512M
+    networks:
+      - monitoring
 
   grafana:
     image: grafana/grafana:latest
@@ -20,6 +26,12 @@ services:
       - GF_AUTH_BASIC_ENABLED=false
     volumes:
       - ./grafana:/etc/grafana/provisioning/
+    deploy:
+      resources:
+        limits:
+          memory: 512M
+    networks:
+      - monitoring
 
   k6:
     image: grafana/k6:latest
@@ -33,6 +45,12 @@ services:
       run -o experimental-prometheus-rw /scripts/script.js
     volumes:
       - ./k6:/scripts
+    deploy:
+      resources:
+        limits:
+          memory: 512M
+    networks:
+      - monitoring
 
   golang-service:
     build:
@@ -46,6 +64,8 @@ services:
         limits:
           cpus: "1.0"
           memory: 512M
+    networks:
+      - monitoring
 
   rust-service:
     build:
@@ -59,6 +79,11 @@ services:
         limits:
           cpus: "1.0"
           memory: 512M
+    networks:
+      - monitoring
 
 volumes:
   grafana-data:
+
+networks:
+  monitoring:
